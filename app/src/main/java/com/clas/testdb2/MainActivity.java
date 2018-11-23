@@ -1,13 +1,12 @@
 package com.clas.testdb2;
 
-import android.arch.persistence.room.Room;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -20,6 +19,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         tv = (TextView) findViewById(R.id.text);
+        Button bt = (Button) findViewById(R.id.button);
 
         /*
         exerciseDb =Room.databaseBuilder(
@@ -40,29 +40,57 @@ public class MainActivity extends AppCompatActivity {
 
         exerciseDb = ExerciseDB.getInstance(getApplicationContext());
 
-
-        new Thread(new Runnable() {
+        bt.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void run() {
-                List<Exercise> exerciseList = exerciseDb.dao().fetchAllExercises();
-                if (exerciseList.size() == 0) {
-                    return;
-                }
-
-                for (int i = 0; i < exerciseList.size(); i++) {
-                    Exercise exercise = exerciseList.get(i);
-                    Log.d("DataRetrieved",exercise.getName());
-                    if (tv.getText()!= "") {
-                        tv.setText(tv.getText() + "\n" + exercise.getName());
-                    }else{
-                        tv.setText(exercise.getName());
-                    }
-
-                }
+            public void onClick(View v) {
+                updateDB();
             }
-        }).start();
+        });
+
+        do {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    List<ExerciseDBObject> exerciseList;
+
+                        exerciseList = exerciseDb.dao().fetchAllExercises();
+                        if (exerciseList.size() == 0) {
+                            return;
+                        }else{
+
+                            for (int i = 0; i < exerciseList.size(); i++) {
+                                ExerciseDBObject exercise = exerciseList.get(i);
+                                Log.d("DataRetrieved", exercise.getName());
+                                if (tv.getText() != "") {
+                                    tv.setText(tv.getText() + "\n" + exercise.getName() + " Wanted:" + exercise.getWanted() +"\n Steps:     "+exercise.getSteps());
+                                } else {
+                                    tv.setText(exercise.getName());
+                                }
+
+                            }
+                        }
+
+            }}).start();
+            }while (tv.getText() == "");
 
         //exerciseDb = ExerciseDB.getInstance(getApplicationContext());
 
+    }
+
+    public void updateDB() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                List<ExerciseDBObject> exerciseList = exerciseDb.dao().fetchAllExercises();
+                for (int i = 0; i < exerciseList.size(); i++) {
+                    if (exerciseList.get(i).getWanted() == 1) {
+                        exerciseList.get(i).setWanted(0);
+                    } else {
+                        exerciseList.get(i).setWanted(1);
+                    }
+                }
+                exerciseDb.dao().updateExercises(exerciseList);
+            }
+        }).start();
     }
 }

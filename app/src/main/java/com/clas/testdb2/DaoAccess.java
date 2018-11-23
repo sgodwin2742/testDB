@@ -10,14 +10,18 @@ import java.util.List;
 @Dao
 public interface DaoAccess {
     @Insert
-    void insertSingleExercise(Exercise ex);
+    void insertSingleExercise(ExerciseDBObject ex);
 
     @Insert
-    void insertExercises(List<Exercise> exList);
+    void insertExercises(List<ExerciseDBObject> exList);
 
-    @Query("SELECT * FROM Exercise")
-    List<Exercise> fetchAllExercises();
+    @Query("SELECT * FROM ExerciseDBObject")
+    List<ExerciseDBObject> fetchAllExercises();
 
     @Update
-    void updateMovie (Exercise ex);
+    void updateExercise (ExerciseDBObject ex);
+
+    @Update
+    void updateExercises (List<ExerciseDBObject> ex);
 }
+
